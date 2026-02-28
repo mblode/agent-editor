@@ -30,7 +30,6 @@ export class AgentRunner {
       // Dynamically import to avoid build-time issues if SDK not installed
       const { query } = await import("@anthropic-ai/claude-code");
 
-      let capturedSessionId: string | undefined;
       let turnsUsed = 0;
 
       for await (const message of query({
@@ -49,15 +48,6 @@ export class AgentRunner {
         const event = this.normalizeMessage(message);
 
         if (event) {
-          // Capture session ID from init event
-          if (
-            event.type === "system" &&
-            event.subtype === "init" &&
-            event.sessionId
-          ) {
-            capturedSessionId = event.sessionId;
-          }
-
           if (event.type === "done") {
             yield {
               ...event,

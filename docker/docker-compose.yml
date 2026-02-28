@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      DATABASE_URL: file:/data/dev.db
+      CORS_ORIGIN: http://localhost:3000
+    volumes:
+      - api-data:/data
+    depends_on:
+      - sandbox
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    depends_on:
+      - api
+
+  sandbox:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sandbox
+    image: agent-editor-sandbox:latest
+    # The sandbox container is built but not run directly —
+    # it's spawned on-demand by SandboxService via the Docker socket
+    profiles:
+      - build-only
+
+volumes:
+  api-data:

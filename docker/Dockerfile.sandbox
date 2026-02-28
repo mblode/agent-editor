@@ -1,0 +1,34 @@
+FROM node:22-alpine
+
+# Install system tools useful for agent operations
+RUN apk add --no-cache \
+    git \
+    curl \
+    wget \
+    bash \
+    jq \
+    python3 \
+    py3-pip \
+    openssh-client
+
+# Set working directory
+WORKDIR /workspace
+
+# Install Node.js tools globally
+RUN npm install -g \
+    @anthropic-ai/claude-code \
+    tsx \
+    typescript
+
+# Create a non-root user for running the agent
+RUN addgroup -g 1001 -S agent && \
+    adduser -S -u 1001 -G agent agent
+
+# Give agent user ownership of workspace
+RUN chown -R agent:agent /workspace
+
+# Switch to non-root user
+USER agent
+
+# Default command (will be overridden by exec calls)
+CMD ["bash"]
